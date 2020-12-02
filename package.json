@@ -6,21 +6,29 @@
   "license": "MIT",
   "main": "serverless-webrtc.js",
   "dependencies": {
-    "wrtc": "~0.0.29",
-    "ansi": "0.3.0"
+    "ansi": "0.3.0",
+    "wrtc": "~0.0.29"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/cjb/serverless-webrtc"
+    "url": "git://github.com/chrisuehlinger/serverless-webrtc"
   },
   "keywords": [
     "webrtc",
     "chat"
   ],
   "bugs": {
-    "url": "https://github.com/cjb/serverless-webrtc/issues"
+    "url": "https://github.com/chrisuehlinger/serverless-webrtc/issues"
   },
-  "bin": "./serverless-webrtc.js",
+  "bin": {
+    "serverless-webrtc": "serverless-webrtc.js"
+  },
   "preferGlobal": true,
-  "homepage": "https://github.com/cjb/serverless-webrtc"
+  "homepage": "https://github.com/chrisuehlinger/serverless-webrtc",
+  "devDependencies": {
+    "browser-sync": "^2.26.13"
+  },
+  "scripts": {
+    "start": "browser-sync start --server --port 9191 --files=\"./**/*\" --directory --no-ghost-mode"
+  }
 }

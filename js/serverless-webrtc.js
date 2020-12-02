@@ -33,25 +33,26 @@ $('#waitForConnection').modal('hide')
 $('#createOrJoin').modal('show')
 
 $('#createBtn').click(function () {
+  requestAnimationFrame(createLocalOffer)
   $('#showLocalOffer').modal('show')
-  createLocalOffer()
 })
 
-$('#joinBtn').click(function () {
-  navigator.getUserMedia = navigator.getUserMedia ||
-                           navigator.webkitGetUserMedia ||
-                           navigator.mozGetUserMedia ||
-                           navigator.msGetUserMedia
-  navigator.getUserMedia({video: true, audio: true}, function (stream) {
-    var video = document.getElementById('localVideo')
-    video.src = window.URL.createObjectURL(stream)
-    video.play()
-    pc2.addStream(stream)
-  }, function (error) {
-    console.log('Error adding stream to pc2: ' + error)
-  })
+$('#joinBtn').click(async function () {
+  prepareForRemoteOffer()
   $('#getRemoteOffer').modal('show')
 })
+
+async function prepareForRemoteOffer() {
+  try {
+    let stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
+    var video = document.getElementById('localVideo')
+    video.srcObject = stream;
+    video.play()
+    pc2.addStream(stream)
+  } catch(error) {
+    console.log('Error adding stream to pc2: ' + error)
+  }
+}
 
 $('#offerSentBtn').click(function () {
   $('#getRemoteAnswer').modal('show')
@@ -152,15 +153,13 @@ function setupDC1 () {
   } catch (e) { console.warn('No data channel (pc1)', e); }
 }
 
-function createLocalOffer () {
+async function createLocalOffer () {
   console.log('video1')
-  navigator.getUserMedia = navigator.getUserMedia ||
-                           navigator.webkitGetUserMedia ||
-                           navigator.mediaDevices.getUserMedia ||
-                           navigator.msGetUserMedia
-  navigator.getUserMedia({video: true, audio: true}, function (stream) {
+  try {
+    let stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
+
     var video = document.getElementById('localVideo')
-    video.src = window.URL.createObjectURL(stream)
+    video.srcObject = stream
     video.play()
     pc1.addStream(stream)
     console.log(stream)
@@ -172,13 +171,13 @@ function createLocalOffer () {
     },
     function () { console.warn("Couldn't create offer") },
     sdpConstraints)
-  }, function (error) {
+  } catch (error) {
     console.log('Error adding stream to pc1: ' + error)
-  })
+  }
 }
 
 pc1.onicecandidate = function (e) {
-  console.log('ICE candidate (pc1)', e)
+  console.log(`ICE candidate (pc1) ${e.candidate && e.candidate.candidate}`)
   if (e.candidate == null) {
     $('#localOffer').html(JSON.stringify(pc1.localDescription))
   }
@@ -188,7 +187,7 @@ function handleOnaddstream (e) {
   console.log('Got remote stream', e.stream)
   var el = document.getElementById('remoteVideo')
   el.autoplay = true
-  attachMediaStream(el, e.stream)
+  el.srcObject = e.stream
 }
 
 pc1.onaddstream = handleOnaddstream
