@@ -29,6 +29,6 @@
     "browser-sync": "^2.26.13"
   },
   "scripts": {
-    "start": "browser-sync start --server --port 9191 --files=\"./**/*\" --directory --no-ghost-mode"
+    "start": "browser-sync start --server --port 9191 --files=\"./**/*.js\" --no-ghost-mode"
   }
 }

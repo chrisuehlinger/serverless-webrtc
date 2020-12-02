@@ -89,8 +89,8 @@ function fileSent (file) {
   console.log(file + ' sent')
 }
 
-function fileProgress (file) {
-  console.log(file + ' progress')
+function fileProgress (status) {
+  console.log(`${Math.round(100 * status.sent / status.length)}% progress`)
 }
 
 function sendFile (data) {
@@ -279,7 +279,7 @@ function handleOfferFromPC1 (offerDesc) {
 }
 
 pc2.onicecandidate = function (e) {
-  console.log('ICE candidate (pc2)', e)
+  console.log(`ICE candidate (pc2) ${e.candidate && e.candidate.candidate}`)
   if (e.candidate == null) {
     $('#localAnswer').html(JSON.stringify(pc2.localDescription))
   }
