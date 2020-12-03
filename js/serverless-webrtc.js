@@ -5,7 +5,7 @@
     https://webrtc-demos.appspot.com/html/pc1.html
 */
 
-var cfg = {'iceServers': [{'url': 'stun:23.21.150.121'}]},
+var cfg = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]},
   con = { 'optional': [{'DtlsSrtpKeyAgreement': true}] }
 
 /* THIS IS ALICE, THE CALLER/SENDER */
@@ -48,7 +48,10 @@ async function prepareForRemoteOffer() {
     var video = document.getElementById('localVideo')
     video.srcObject = stream;
     video.play()
-    pc2.addStream(stream)
+    
+    stream.getTracks().forEach(function(track) {
+      pc2.addTrack(track, stream);
+    });
   } catch(error) {
     console.log('Error adding stream to pc2: ' + error)
   }
@@ -161,16 +164,20 @@ async function createLocalOffer () {
     var video = document.getElementById('localVideo')
     video.srcObject = stream
     video.play()
-    pc1.addStream(stream)
+    
+    stream.getTracks().forEach(function(track) {
+      pc1.addTrack(track, stream);
+    });
     console.log(stream)
     console.log('adding stream to pc1')
     setupDC1()
-    pc1.createOffer(function (desc) {
-      pc1.setLocalDescription(desc, function () {}, function () {})
+    try {
+      const desc = await pc1.createOffer(sdpConstraints)
+      pc1.setLocalDescription(desc)
       console.log('created local offer', desc)
-    },
-    function () { console.warn("Couldn't create offer") },
-    sdpConstraints)
+    } catch(error){
+      console.warn("Couldn't create offer", error)
+    }
   } catch (error) {
     console.log('Error adding stream to pc1: ' + error)
   }
@@ -267,15 +274,16 @@ pc2.ondatachannel = function (e) {
   }
 }
 
-function handleOfferFromPC1 (offerDesc) {
+async function handleOfferFromPC1 (offerDesc) {
   pc2.setRemoteDescription(offerDesc)
-  pc2.createAnswer(function (answerDesc) {
+  try {
+    const answerDesc = await pc2.createAnswer(sdpConstraints);
     writeToChatLog('Created local answer', 'text-success')
     console.log('Created local answer: ', answerDesc)
     pc2.setLocalDescription(answerDesc)
-  },
-  function () { console.warn("Couldn't create offer") },
-  sdpConstraints)
+  } catch(error){
+    console.warn("Couldn't create answer")
+  }
 }
 
 pc2.onicecandidate = function (e) {
